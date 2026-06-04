@@ -1,4 +1,4 @@
-import type { AdditionalOutputs, CategoryDef } from './types';
+import type { AdditionalOutputs, CategoryDef, FormValues } from './types';
 
 export const CATEGORIES: CategoryDef[] = [
   {
@@ -13,8 +13,8 @@ export const CATEGORIES: CategoryDef[] = [
       },
       {
         key: 'docType',
-        label: '資料の種類',
-        example: '例：研修資料、提案書、報告書、社内説明資料、営業資料',
+        label: '資料の形式・種類',
+        example: '例：提案書（PowerPoint）、研修資料（PDF配布）、報告書（印刷）',
         type: 'text',
       },
       {
@@ -25,8 +25,14 @@ export const CATEGORIES: CategoryDef[] = [
       },
       {
         key: 'audience',
-        label: '対象者',
+        label: '対象読者',
         example: '例：法務に詳しくない営業部門の管理職、全社員、経営層、顧客',
+        type: 'text',
+      },
+      {
+        key: 'presenter',
+        label: '発表者',
+        example: '例：事業部長が説明、現場リーダーが報告、資料配布のみ（発表なし）',
         type: 'text',
       },
       {
@@ -38,7 +44,7 @@ export const CATEGORIES: CategoryDef[] = [
       {
         key: 'language',
         label: '使用言語',
-        example: '例：日本語、英語、日本語(敬体)',
+        example: '例：日本語、英語、日本語（敬体）',
         type: 'text',
       },
       {
@@ -69,26 +75,15 @@ export const CATEGORIES: CategoryDef[] = [
       {
         key: 'desiredAction',
         label: '相手に取ってほしい行動',
-        example: '例：提案内容に承認を出してほしい、研修後にチェックリストを運用してほしい',
-        type: 'textarea',
-      },
-      {
-        key: 'decision',
-        label: '判断してほしい事項',
-        example: '例：来期の予算配分、ベンダー選定、本施策の正式採用可否',
+        example:
+          '例：提案内容に承認を出してほしい、来期予算を決定してほしい、研修後にチェックリストを運用してほしい',
         type: 'textarea',
       },
       {
         key: 'impression',
-        label: '相手に残したい印象',
+        label: '相手に与えたい印象',
         example: '例：データに基づく堅実な提案、現場感のある実行可能な計画',
         type: 'text',
-      },
-      {
-        key: 'successState',
-        label: '成功の状態',
-        example: '例：質疑応答で具体的な実行スケジュールの議論に進む',
-        type: 'textarea',
       },
     ],
   },
@@ -96,12 +91,6 @@ export const CATEGORIES: CategoryDef[] = [
     id: 'reader',
     title: '3. 読み手情報',
     fields: [
-      {
-        key: 'readerAttr',
-        label: '読み手の属性',
-        example: '例：30〜50代の営業部門マネージャー、技術知識は中程度',
-        type: 'text',
-      },
       {
         key: 'readerKnowledge',
         label: '読み手の前提知識',
@@ -126,6 +115,13 @@ export const CATEGORIES: CategoryDef[] = [
         example: '例：数値根拠、具体事例、シンプルな言い回し',
         type: 'text',
       },
+      {
+        key: 'decisionMaker',
+        label: '意思決定者',
+        example:
+          '例：本部長が最終決裁、合議制で部長3名の合意が必要、現場判断で進められる',
+        type: 'text',
+      },
     ],
   },
   {
@@ -134,14 +130,9 @@ export const CATEGORIES: CategoryDef[] = [
     fields: [
       {
         key: 'background',
-        label: '背景',
-        example: '例：法改正により表記基準が厳格化、社内でも複数のヒヤリ事例が発生',
-        type: 'textarea',
-      },
-      {
-        key: 'currentState',
-        label: '現状',
-        example: '例：チェック体制は広告部門のみ。営業部門の資料は未確認',
+        label: '背景・現状',
+        example:
+          '例：法改正で表記基準が厳格化（背景）／チェック体制は広告部門のみで営業部門は未整備（現状）',
         type: 'textarea',
       },
       {
@@ -157,15 +148,10 @@ export const CATEGORIES: CategoryDef[] = [
         type: 'textarea',
       },
       {
-        key: 'proposal',
-        label: '提案内容',
-        example: '例：全社向け研修の定期実施、チェックリスト導入、相談窓口設置',
-        type: 'textarea',
-      },
-      {
         key: 'conclusion',
-        label: '結論',
-        example: '例：来四半期から全部門で研修とチェックリスト運用を開始する',
+        label: '結論・提案内容',
+        example:
+          '例：来四半期から全部門で研修とチェックリスト運用を開始する／全社向け研修の定期実施、チェックリスト導入、相談窓口設置',
         type: 'textarea',
       },
       {
@@ -188,26 +174,35 @@ export const CATEGORIES: CategoryDef[] = [
       },
       {
         key: 'merits',
-        label: 'メリット',
-        example: '例：違反リスク低減、ブランド毀損防止、現場の判断スピード向上',
+        label: '期待される効果（定量・定性）',
+        example:
+          '例：違反リスク50％削減、対応工数月20時間削減（定量）／ブランド毀損防止、現場判断スピード向上（定性）',
         type: 'textarea',
       },
       {
         key: 'demerits',
-        label: 'デメリット',
-        example: '例：研修工数の増加、初期コスト発生',
-        type: 'textarea',
-      },
-      {
-        key: 'risks',
-        label: 'リスク',
-        example: '例：研修未受講者の発生、現場運用での形骸化',
+        label: 'デメリット・リスク',
+        example:
+          '例：研修工数の増加、初期コスト発生、現場運用での形骸化、未受講者発生のリスク',
         type: 'textarea',
       },
       {
         key: 'countermeasures',
-        label: '対応策',
+        label: 'リスクへの対応策',
         example: '例：受講管理システム導入、四半期ごとの運用レビュー',
+        type: 'textarea',
+      },
+      {
+        key: 'cost',
+        label: 'コスト・予算',
+        example:
+          '例：初年度500万円（システム導入＋研修費）、2年目以降は年200万円の運用費',
+        type: 'textarea',
+      },
+      {
+        key: 'comparison',
+        label: '比較対象（他案・現状維持）',
+        example: '例：A案：今回提案、B案：外部委託、C案：現状維持',
         type: 'textarea',
       },
       {
@@ -224,7 +219,7 @@ export const CATEGORIES: CategoryDef[] = [
       },
       {
         key: 'faq',
-        label: 'FAQに入れたい内容',
+        label: '想定される質問',
         example: '例：違反かどうか迷ったらどこに相談する？／研修は何分かかる？',
         type: 'textarea',
       },
@@ -242,14 +237,9 @@ export const CATEGORIES: CategoryDef[] = [
       },
       {
         key: 'mustMessages',
-        label: '必ず入れたいメッセージ',
-        example: '例：「自分の業務にも関係がある」と認識してもらう',
-        type: 'textarea',
-      },
-      {
-        key: 'mustPages',
-        label: '必ず入れたいページ',
-        example: '例：表紙、目的、事例、チェックリスト、相談窓口',
+        label: '必ず入れたい内容・メッセージ',
+        example:
+          '例：「自分の業務にも関係がある」と認識してもらう／チェックリスト運用ページは必ず含める',
         type: 'textarea',
       },
       {
@@ -266,9 +256,16 @@ export const CATEGORIES: CategoryDef[] = [
       },
       {
         key: 'confidentiality',
-        label: '機密度',
-        example: '例：社外秘、社内限り、関係部署限定',
+        label: '機密区分',
+        example: '例：社外秘、社内限り、関係部署限定、Public',
         type: 'text',
+      },
+      {
+        key: 'citation',
+        label: '出典・引用の扱い',
+        example:
+          '例：公開情報は出典明記、社内データは「自社調べ」と記載、画像は商用利用可のもののみ',
+        type: 'textarea',
       },
     ],
   },
@@ -280,12 +277,6 @@ export const CATEGORIES: CategoryDef[] = [
         key: 'aspectRatio',
         label: '資料の縦横比',
         example: '例：16:9、4:3、A4縦',
-        type: 'text',
-      },
-      {
-        key: 'colorScheme',
-        label: '配色',
-        example: '例：白基調＋ネイビー＋アクセントにオレンジ',
         type: 'text',
       },
       {
@@ -310,31 +301,13 @@ export const CATEGORIES: CategoryDef[] = [
         key: 'designMood',
         label: 'デザインの雰囲気',
         example:
-          '例：白背景、青系、文字少なめ、図解多め、社内研修らしく柔らかい雰囲気',
+          '例：白背景・青系・文字少なめ・図解多め／フォントは太めゴシック／余白ゆったり、社内研修らしく柔らかい雰囲気',
         type: 'textarea',
-      },
-      {
-        key: 'fontMood',
-        label: 'フォントの雰囲気',
-        example: '例：ゴシック系で読みやすく、見出しは太め、本文は標準',
-        type: 'text',
-      },
-      {
-        key: 'margin',
-        label: '余白',
-        example: '例：余白多め、ゆったり、上下左右に十分なスペース',
-        type: 'text',
       },
       {
         key: 'textVolume',
         label: '文字量',
         example: '例：1スライド5行以内、見出しと要点のみ',
-        type: 'text',
-      },
-      {
-        key: 'imageQuality',
-        label: '画像の質',
-        example: '例：シンプルなフラットイラスト、実写は使わない',
         type: 'text',
       },
       {
@@ -344,22 +317,11 @@ export const CATEGORIES: CategoryDef[] = [
         type: 'text',
       },
       {
-        key: 'illustration',
-        label: 'イラスト',
-        example: '例：人物アイコンを活用、線画イラストを少量',
-        type: 'text',
-      },
-      {
-        key: 'photo',
-        label: '写真',
-        example: '例：表紙のみ写真、本編は不使用',
-        type: 'text',
-      },
-      {
-        key: 'animation',
-        label: 'アニメーション',
-        example: '例：使用しない、最小限のフェードのみ',
-        type: 'text',
+        key: 'imageStyle',
+        label: '画像・図版のスタイル',
+        example:
+          '例：シンプルなフラットイラスト中心、表紙のみ実写、人物アイコンを活用、写真は不使用',
+        type: 'textarea',
       },
     ],
   },
@@ -387,8 +349,9 @@ export const ALL_FIELD_KEYS: string[] = CATEGORIES.flatMap((c) =>
   c.fields.map((f) => f.key),
 );
 
-export const EMPTY_VALUES: Record<string, string> = Object.fromEntries(
-  ALL_FIELD_KEYS.map((k) => [k, '']),
+// 言語のみ「日本語」を初期値に
+export const EMPTY_VALUES: FormValues = Object.fromEntries(
+  ALL_FIELD_KEYS.map((k) => [k, k === 'language' ? '日本語' : '']),
 );
 
 // 最小限モードで表示する重要項目
@@ -404,10 +367,11 @@ export const ESSENTIAL_KEYS: ReadonlySet<string> = new Set([
   'desiredAction',
   // 読み手
   'readerInterest',
+  'decisionMaker',
   // 内容
   'issues',
-  'proposal',
   'conclusion',
+  'cost',
   // 入れたい内容
   'mustKeywords',
   // デザイン
