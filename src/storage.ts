@@ -38,11 +38,42 @@ export function createEmptyProject(name = '新しい資料設計'): Project {
   };
 }
 
+function migrateValues(raw: Record<string, unknown>): FormValues {
+  const result: FormValues = { ...EMPTY_VALUES };
+
+  // 有効なキーをコピー
+  for (const k of Object.keys(EMPTY_VALUES)) {
+    const v = raw[k];
+    if (typeof v === 'string') result[k] = v;
+  }
+
+  // 旧キーを新キーへマージ（中身があれば改行で連結）
+  const mergeOld = (newKey: string, oldKey: string) => {
+    const v = raw[oldKey];
+    if (typeof v !== 'string' || v.trim() === '') return;
+    const cur = result[newKey] ?? '';
+    result[newKey] = cur.trim() === '' ? v : `${cur}\n${v}`;
+  };
+
+  mergeOld('background', 'currentState');
+  mergeOld('conclusion', 'proposal');
+  mergeOld('demerits', 'risks');
+  mergeOld('mustMessages', 'mustPages');
+  mergeOld('imageStyle', 'imageQuality');
+  mergeOld('imageStyle', 'illustration');
+  mergeOld('imageStyle', 'photo');
+  mergeOld('designMood', 'fontMood');
+  mergeOld('designMood', 'margin');
+
+  return result;
+}
+
 function normalizeProject(p: Partial<Project>): Project {
+  const rawValues = (p.values ?? {}) as Record<string, unknown>;
   return {
     id: typeof p.id === 'string' ? p.id : newId(),
     name: typeof p.name === 'string' && p.name.trim() !== '' ? p.name : '名称未設定',
-    values: { ...EMPTY_VALUES, ...((p.values ?? {}) as FormValues) },
+    values: migrateValues(rawValues),
     outputs: { ...DEFAULT_OUTPUTS, ...((p.outputs ?? {}) as AdditionalOutputs) },
     updatedAt: typeof p.updatedAt === 'number' ? p.updatedAt : Date.now(),
   };
