@@ -1,5 +1,5 @@
 import { CATEGORIES } from './formConfig';
-import type { AdditionalOutputs, FormValues } from './types';
+import type { AdditionalOutputs, AiTarget, FormValues } from './types';
 
 function formatValue(v: string): string {
   const trimmed = v.trim();
@@ -97,15 +97,41 @@ const GUIDELINES = `【全体ルール】
 - 数値やデータは、入力されたもののみを使用し、不明な場合は「（要数値確認）」と明記してください。
 - 各パターンの最初に「このパターンが向くシーン」を1〜2行で書いてください。`;
 
+interface AiProfile {
+  intro: string;
+  extraTip: string;
+}
+
+const AI_PROFILES: Record<AiTarget, AiProfile> = {
+  chatgpt: {
+    intro:
+      'あなたはビジネス資料作成の専門家です。以下の情報をもとに、ビジネスでそのまま使える資料を作成してください。',
+    extraTip:
+      'Markdownの表・箇条書きを活用し、読み手が一目で構造を把握できる形で出力してください。',
+  },
+  claude: {
+    intro:
+      'あなたはビジネス資料作成のプロフェッショナルです。提供された情報を丁寧に分析し、実務でそのまま活用できる資料を作成してください。',
+    extraTip:
+      'まず全体の構成案を提示してから、各パターン・各スライドの詳細を順に展開してください。論理の飛躍を避け、根拠と結論を明確に対応づけてください。',
+  },
+  gemini: {
+    intro:
+      'あなたはビジネス資料作成の専門家です。以下の情報をもとに、ビジネスでそのまま使える資料を作成してください。',
+    extraTip:
+      '明確で構造化された応答を心がけ、表・図解・スライドごとの区切りをはっきり示してください。各セクションは見出しで区切ってください。',
+  },
+};
+
 export function buildPrompt(
   values: FormValues,
   outputs: AdditionalOutputs,
+  aiTarget: AiTarget = 'chatgpt',
 ): string {
-  const intro =
-    'あなたはビジネス資料作成の専門家です。以下の情報をもとに、ビジネスでそのまま使える資料を作成してください。';
+  const profile = AI_PROFILES[aiTarget];
 
   const sections = [
-    intro,
+    profile.intro,
     '',
     '【入力情報】',
     buildInputSection(values),
@@ -130,6 +156,8 @@ export function buildPrompt(
     '3. C案の全スライド',
     '4. 選択された追加成果物（1枚要約・Appendix・想定Q&A・送付メール文 など）',
     '5. 補完した前提一覧',
+    '',
+    `【出力のヒント】\n${profile.extraTip}`,
   );
 
   return sections.join('\n');

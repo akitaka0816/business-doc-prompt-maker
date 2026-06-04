@@ -390,3 +390,26 @@ export const ALL_FIELD_KEYS: string[] = CATEGORIES.flatMap((c) =>
 export const EMPTY_VALUES: Record<string, string> = Object.fromEntries(
   ALL_FIELD_KEYS.map((k) => [k, '']),
 );
+
+// 最小限モードで表示する重要項目
+export const ESSENTIAL_KEYS: ReadonlySet<string> = new Set([
+  // 基本情報
+  'title',
+  'docType',
+  'purpose',
+  'audience',
+  'pages',
+  // ゴール
+  'mainMessage',
+  'desiredAction',
+  // 読み手
+  'readerInterest',
+  // 内容
+  'issues',
+  'proposal',
+  'conclusion',
+  // 入れたい内容
+  'mustKeywords',
+  // デザイン
+  'designMood',
+]);

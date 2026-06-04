@@ -1,18 +1,33 @@
 import { useState } from 'react';
-import type { CategoryDef, FormValues } from '../types';
+import { ESSENTIAL_KEYS } from '../formConfig';
+import type { CategoryDef, FormMode, FormValues } from '../types';
 import FormField from './FormField';
 
 interface Props {
   category: CategoryDef;
   values: FormValues;
   onChange: (key: string, value: string) => void;
+  mode: FormMode;
   defaultOpen?: boolean;
 }
 
-function CategorySection({ category, values, onChange, defaultOpen = false }: Props) {
+function CategorySection({
+  category,
+  values,
+  onChange,
+  mode,
+  defaultOpen = false,
+}: Props) {
   const [open, setOpen] = useState(defaultOpen);
 
-  const filledCount = category.fields.filter(
+  const visibleFields =
+    mode === 'minimal'
+      ? category.fields.filter((f) => ESSENTIAL_KEYS.has(f.key))
+      : category.fields;
+
+  if (visibleFields.length === 0) return null;
+
+  const filledCount = visibleFields.filter(
     (f) => (values[f.key] ?? '').trim() !== '',
   ).length;
 
@@ -26,7 +41,7 @@ function CategorySection({ category, values, onChange, defaultOpen = false }: Pr
       >
         <span className="category__title">{category.title}</span>
         <span className="category__meta">
-          {filledCount} / {category.fields.length} 入力済み
+          {filledCount} / {visibleFields.length} 入力済み
           <span className="category__chevron" aria-hidden>
             {open ? '▾' : '▸'}
           </span>
@@ -34,7 +49,7 @@ function CategorySection({ category, values, onChange, defaultOpen = false }: Pr
       </button>
       {open && (
         <div className="category__body">
-          {category.fields.map((field) => (
+          {visibleFields.map((field) => (
             <FormField
               key={field.key}
               field={field}

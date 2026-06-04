@@ -32,7 +32,16 @@ export interface Project {
   updatedAt: number;
 }
 
+export type AiTarget = 'chatgpt' | 'claude' | 'gemini';
+export type FormMode = 'minimal' | 'detailed';
+
+export interface UiPrefs {
+  mode: FormMode;
+  aiTarget: AiTarget;
+}
+
 export interface AppState {
   projects: Project[];
   currentProjectId: string;
+  ui: UiPrefs;
 }
