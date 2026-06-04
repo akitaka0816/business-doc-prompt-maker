@@ -24,7 +24,15 @@ export interface AdditionalOutputs {
   pptxRequest: boolean;
 }
 
-export interface AppState {
+export interface Project {
+  id: string;
+  name: string;
   values: FormValues;
   outputs: AdditionalOutputs;
+  updatedAt: number;
+}
+
+export interface AppState {
+  projects: Project[];
+  currentProjectId: string;
 }

@@ -1,23 +1,33 @@
 import { useRef } from 'react';
-import type { AppState } from '../types';
+import type { AdditionalOutputs, FormValues } from '../types';
+
+interface ImportPayload {
+  values: FormValues;
+  outputs: AdditionalOutputs;
+  name?: string;
+}
 
 interface Props {
-  state: AppState;
-  onImport: (state: AppState) => void;
+  values: FormValues;
+  outputs: AdditionalOutputs;
+  currentName: string;
+  onImport: (payload: ImportPayload) => void;
   onReset: () => void;
 }
 
-function Toolbar({ state, onImport, onReset }: Props) {
+function Toolbar({ values, outputs, currentName, onImport, onReset }: Props) {
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const handleExport = () => {
-    const blob = new Blob([JSON.stringify(state, null, 2)], {
+    const payload = { name: currentName, values, outputs };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'business-doc-prompt.json';
+    const safe = currentName.replace(/[\\/:*?"<>|]/g, '_').slice(0, 60).trim();
+    a.download = `${safe || 'business-doc-prompt'}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -31,26 +41,26 @@ function Toolbar({ state, onImport, onReset }: Props) {
     if (!file) return;
     try {
       const text = await file.text();
-      const parsed = JSON.parse(text) as AppState;
+      const parsed = JSON.parse(text) as Partial<ImportPayload>;
       if (
         parsed &&
         typeof parsed === 'object' &&
         'values' in parsed &&
         'outputs' in parsed
       ) {
-        onImport(parsed);
+        onImport(parsed as ImportPayload);
       } else {
-        alert('JSONの形式が想定と異なります。');
+        window.alert('JSONの形式が想定と異なります。');
       }
     } catch {
-      alert('JSONを読み込めませんでした。');
+      window.alert('JSONを読み込めませんでした。');
     } finally {
       e.target.value = '';
     }
   };
 
   const handleReset = () => {
-    if (confirm('入力内容をすべてリセットします。よろしいですか？')) {
+    if (window.confirm('この資料設計の入力内容をすべてリセットします。よろしいですか？')) {
       onReset();
     }
   };
