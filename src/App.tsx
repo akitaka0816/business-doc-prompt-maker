@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import AdditionalOutputsPanel from './components/AdditionalOutputsPanel';
 import CategorySection from './components/CategorySection';
 import MissingInfoNotice from './components/MissingInfoNotice';
+import ModeToggle from './components/ModeToggle';
 import ProjectBar from './components/ProjectBar';
 import PromptPreview from './components/PromptPreview';
 import ShareDialog from './components/ShareDialog';
@@ -19,7 +20,9 @@ import { createEmptyProject, loadState, newId, saveState } from './storage';
 import { TEMPLATES, applyTemplate } from './templates';
 import type {
   AdditionalOutputs,
+  AiTarget,
   AppState,
+  FormMode,
   FormValues,
   Project,
 } from './types';
@@ -52,6 +55,7 @@ function App() {
         updatedAt: Date.now(),
       };
       return {
+        ...prev,
         projects: [...prev.projects, project],
         currentProjectId: project.id,
       };
@@ -92,6 +96,7 @@ function App() {
   const handleCreateBlank = () => {
     const p = createEmptyProject();
     setState((prev) => ({
+      ...prev,
       projects: [...prev.projects, p],
       currentProjectId: p.id,
     }));
@@ -109,6 +114,7 @@ function App() {
       updatedAt: Date.now(),
     };
     setState((prev) => ({
+      ...prev,
       projects: [...prev.projects, project],
       currentProjectId: project.id,
     }));
@@ -134,6 +140,7 @@ function App() {
       updatedAt: Date.now(),
     };
     setState((prev) => ({
+      ...prev,
       projects: [...prev.projects, copy],
       currentProjectId: copy.id,
     }));
@@ -145,7 +152,7 @@ function App() {
       const safe = projects.length > 0 ? projects : [createEmptyProject()];
       const currentProjectId =
         prev.currentProjectId === id ? safe[0].id : prev.currentProjectId;
-      return { projects: safe, currentProjectId };
+      return { ...prev, projects: safe, currentProjectId };
     });
   };
 
@@ -162,6 +169,7 @@ function App() {
       updatedAt: Date.now(),
     };
     setState((prev) => ({
+      ...prev,
       projects: [...prev.projects, project],
       currentProjectId: project.id,
     }));
@@ -175,6 +183,14 @@ function App() {
     }));
   };
 
+  const setMode = (mode: FormMode) => {
+    setState((prev) => ({ ...prev, ui: { ...prev.ui, mode } }));
+  };
+
+  const setAiTarget = (aiTarget: AiTarget) => {
+    setState((prev) => ({ ...prev, ui: { ...prev.ui, aiTarget } }));
+  };
+
   const shareUrl = useMemo(
     () =>
       buildShareUrl(
@@ -186,8 +202,13 @@ function App() {
   );
 
   const prompt = useMemo(
-    () => buildPrompt(currentProject.values, currentProject.outputs),
-    [currentProject.values, currentProject.outputs],
+    () =>
+      buildPrompt(
+        currentProject.values,
+        currentProject.outputs,
+        state.ui.aiTarget,
+      ),
+    [currentProject.values, currentProject.outputs, state.ui.aiTarget],
   );
 
   const filledTotal = useMemo(
@@ -235,12 +256,15 @@ function App() {
 
             <MissingInfoNotice values={currentProject.values} />
 
+            <ModeToggle mode={state.ui.mode} onChange={setMode} />
+
             {CATEGORIES.map((cat, i) => (
               <CategorySection
                 key={cat.id}
                 category={cat}
                 values={currentProject.values}
                 onChange={updateValue}
+                mode={state.ui.mode}
                 defaultOpen={i === 0}
               />
             ))}
@@ -252,7 +276,11 @@ function App() {
           </div>
 
           <aside className="grid__right">
-            <PromptPreview prompt={prompt} />
+            <PromptPreview
+              prompt={prompt}
+              aiTarget={state.ui.aiTarget}
+              onChangeAi={setAiTarget}
+            />
           </aside>
         </div>
       </main>

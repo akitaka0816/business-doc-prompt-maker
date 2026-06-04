@@ -1,5 +1,25 @@
 import { DEFAULT_OUTPUTS, EMPTY_VALUES } from './formConfig';
-import type { AdditionalOutputs, AppState, FormValues, Project } from './types';
+import type {
+  AdditionalOutputs,
+  AiTarget,
+  AppState,
+  FormValues,
+  FormMode,
+  Project,
+  UiPrefs,
+} from './types';
+
+export const DEFAULT_UI: UiPrefs = {
+  mode: 'detailed',
+  aiTarget: 'chatgpt',
+};
+
+function normalizeUi(u: Partial<UiPrefs> | undefined): UiPrefs {
+  const mode: FormMode = u?.mode === 'minimal' ? 'minimal' : 'detailed';
+  const aiTarget: AiTarget =
+    u?.aiTarget === 'claude' || u?.aiTarget === 'gemini' ? u.aiTarget : 'chatgpt';
+  return { mode, aiTarget };
+}
 
 const STORAGE_KEY_V1 = 'business-doc-prompt-maker:v1';
 const STORAGE_KEY = 'business-doc-prompt-maker:v2';
@@ -40,7 +60,7 @@ export function loadState(): AppState {
           projects.some((p) => p.id === parsed.currentProjectId)
             ? parsed.currentProjectId
             : projects[0].id;
-        return { projects, currentProjectId };
+        return { projects, currentProjectId, ui: normalizeUi(parsed.ui) };
       }
     }
     // v1 からの移行
@@ -55,13 +75,22 @@ export function loadState(): AppState {
         values: parsed.values as FormValues | undefined,
         outputs: parsed.outputs as AdditionalOutputs | undefined,
       });
-      return { projects: [migrated], currentProjectId: migrated.id };
+      return {
+        projects: [migrated],
+        currentProjectId: migrated.id,
+        ui: { ...DEFAULT_UI },
+      };
     }
   } catch {
     // ignore
   }
   const first = createEmptyProject('はじめての資料設計');
-  return { projects: [first], currentProjectId: first.id };
+  // 新規ユーザーは入力ハードルを下げるため最小限モードで開始
+  return {
+    projects: [first],
+    currentProjectId: first.id,
+    ui: { mode: 'minimal', aiTarget: 'chatgpt' },
+  };
 }
 
 export function saveState(state: AppState): void {
